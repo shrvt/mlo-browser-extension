@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "Multi-Language URL Opener",
+  "version": "1.0.0",
+  "description": "Open multiple URL variants with different language codes in separate tabs",
+  "permissions": ["tabs", "storage"],
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "Open Language Variants"
+  }
+}
