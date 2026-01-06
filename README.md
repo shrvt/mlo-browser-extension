@@ -1,4 +1,4 @@
-# Multi-Language URL Opener
+# Multi-Language Link Manager - Browser Extension
 
 A Chrome browser extension for opening multiple URL variants simultaneously in separate tabs. Useful for checking the same page across different language versions.
 
