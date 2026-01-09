@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(npm install:*)",
-      "mcp__sonarqube__search_my_sonarqube_projects",
-      "Bash(npm run lint)"
-    ]
-  }
-}
