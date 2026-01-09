@@ -75,7 +75,8 @@ h1 {
   margin-bottom: 18px;
 }
 
-.section > label {
+.section > label,
+.section-label {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -185,7 +186,8 @@ h1 {
   margin-bottom: 8px;
 }
 
-.languages-header > label {
+.languages-header > label,
+.languages-header > .section-label {
   margin-bottom: 0;
 }
 

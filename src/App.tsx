@@ -6,11 +6,28 @@ const DEV_MODE_URL = 'https://example.com/de/products/category/item'
 
 const isExtension = typeof chrome !== 'undefined' && chrome.tabs !== undefined
 
+const getInitialPathSegments = (urlString: string): string[] => {
+  try {
+    const urlObj = new URL(urlString)
+    return urlObj.pathname.split('/').filter(Boolean)
+  } catch {
+    return []
+  }
+}
+
 function App() {
-  const [url, setUrl] = useState('')
+  const [url, setUrl] = useState(() => isExtension ? '' : DEV_MODE_URL)
   const [segmentIndex, setSegmentIndex] = useState<number | null>(null)
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>(DEFAULT_LANGUAGES)
-  const [pathSegments, setPathSegments] = useState<string[]>([])
+  const [pathSegments, setPathSegments] = useState<string[]>(() =>
+    isExtension ? [] : getInitialPathSegments(DEV_MODE_URL)
+  )
+
+  const updatePathSegments = (urlString: string) => {
+    const segments = getInitialPathSegments(urlString)
+    setPathSegments(segments)
+    setSegmentIndex(null)
+  }
 
   useEffect(() => {
     if (isExtension) {
@@ -25,24 +42,8 @@ function App() {
           setSelectedLanguages(result.selectedLanguages)
         }
       })
-    } else {
-      // Dev mode: use sample URL
-      setUrl(DEV_MODE_URL)
-      updatePathSegments(DEV_MODE_URL)
     }
   }, [])
-
-  const updatePathSegments = (urlString: string) => {
-    try {
-      const urlObj = new URL(urlString)
-      const segments = urlObj.pathname.split('/').filter(Boolean)
-      setPathSegments(segments)
-      setSegmentIndex(null)
-    } catch {
-      setPathSegments([])
-      setSegmentIndex(null)
-    }
-  }
 
   const handleUrlChange = (newUrl: string) => {
     setUrl(newUrl)
@@ -109,6 +110,11 @@ function App() {
     }
   })()
 
+  const getInputClassName = () => {
+    if (!url) return ''
+    return isValidUrl ? 'valid' : 'invalid'
+  }
+
   return (
     <div className="popup">
       <header className="header">
@@ -130,7 +136,7 @@ function App() {
               <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
               <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
             </svg>
-          </span>
+          </span>{' '}
           URL
         </label>
         <input
@@ -139,25 +145,25 @@ function App() {
           value={url}
           onChange={(e) => handleUrlChange(e.target.value)}
           placeholder="Enter or paste URL here"
-          className={isValidUrl && url ? 'valid' : url ? 'invalid' : ''}
+          className={getInputClassName()}
         />
       </div>
 
       {isValidUrl && pathSegments.length > 0 && (
         <div className="section">
-          <label>
+          <span className="section-label">
             <span className="label-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
                 <rect x="9" y="3" width="6" height="4" rx="1" />
               </svg>
-            </span>
+            </span>{' '}
             Select the language segment
-          </label>
+          </span>
           <div className="segments">
             {pathSegments.map((segment, index) => (
               <button
-                key={index}
+                key={`${segment}-${index}`}
                 className={`segment ${segmentIndex === index ? 'selected' : ''}`}
                 onClick={() => setSegmentIndex(index)}
                 title={`Click to select "${segment}" as language segment`}
@@ -172,16 +178,16 @@ function App() {
 
       <div className="section">
         <div className="languages-header">
-          <label>
+          <span className="section-label">
             <span className="label-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="10" />
                 <path d="M2 12h20" />
                 <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
               </svg>
-            </span>
+            </span>{' '}
             Languages
-          </label>
+          </span>
           <div className="quick-select">
             <button onClick={handleSelectAll} className="link-button">All</button>
             <span className="divider">|</span>
@@ -217,7 +223,7 @@ function App() {
           <polyline points="15 3 21 3 21 9" />
           <line x1="10" y1="14" x2="21" y2="3" />
         </svg>
-        Open {selectedLanguages.length} Tab{selectedLanguages.length !== 1 ? 's' : ''}
+        Open {selectedLanguages.length} Tab{selectedLanguages.length === 1 ? '' : 's'}
       </button>
 
       {!isValidUrl && url && (
