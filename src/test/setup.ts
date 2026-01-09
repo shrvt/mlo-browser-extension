@@ -12,8 +12,8 @@ const chromeMock = {
   },
 }
 
-// Assign mock to global (without tabs, so isExtension will be false)
-Object.assign(global, { chrome: chromeMock })
+// Assign mock to globalThis (without tabs, so isExtension will be false)
+Object.assign(globalThis, { chrome: chromeMock })
 
 // Export for test access
 export { chromeMock }

@@ -79,8 +79,10 @@ describe('App', () => {
     it('marks segment as selected when clicked', () => {
       render(<App />)
       const deButton = screen.getByText('de').closest('button')
-      fireEvent.click(deButton!)
-      expect(deButton).toHaveClass('selected')
+      if (deButton) {
+        fireEvent.click(deButton)
+        expect(deButton).toHaveClass('selected')
+      }
     })
 
     it('shows info message when URL has no path segments', () => {
@@ -170,7 +172,9 @@ describe('App', () => {
       render(<App />)
       // Select a segment
       const deButton = screen.getByText('de').closest('button')
-      fireEvent.click(deButton!)
+      if (deButton) {
+        fireEvent.click(deButton)
+      }
 
       // Deselect all languages
       fireEvent.click(screen.getByText('None'))
@@ -183,7 +187,9 @@ describe('App', () => {
       render(<App />)
       // Select a segment
       const deButton = screen.getByText('de').closest('button')
-      fireEvent.click(deButton!)
+      if (deButton) {
+        fireEvent.click(deButton)
+      }
 
       const openButton = screen.getByRole('button', { name: /Open.*Tab/ })
       expect(openButton).not.toBeDisabled()
@@ -201,12 +207,14 @@ describe('App', () => {
 
   describe('Open All functionality', () => {
     it('shows alert in dev mode when open button clicked', () => {
-      const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {})
+      const alertSpy = vi.spyOn(globalThis, 'alert').mockImplementation(() => {})
 
       render(<App />)
       // Select a segment
       const deButton = screen.getByText('de').closest('button')
-      fireEvent.click(deButton!)
+      if (deButton) {
+        fireEvent.click(deButton)
+      }
 
       // Click open button
       const openButton = screen.getByRole('button', { name: /Open.*Tab/ })
