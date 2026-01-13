@@ -19,12 +19,34 @@ const DEV_MODE_URL = 'https://example.com/de/products/category/item'
 
 const isExtension = typeof chrome !== 'undefined' && chrome.tabs !== undefined
 
+type ParseMode = 'path' | 'query'
+
 const getInitialPathSegments = (urlString: string): string[] => {
   try {
     const urlObj = new URL(urlString)
     return urlObj.pathname.split('/').filter(Boolean)
   } catch {
     return []
+  }
+}
+
+const getQueryItemSegments = (urlString: string): string[] => {
+  try {
+    const urlObj = new URL(urlString)
+    const itemParam = urlObj.searchParams.get('item')
+    if (!itemParam) return []
+    const decodedPath = decodeURIComponent(itemParam)
+    return decodedPath.split('/').filter(Boolean)
+  } catch {
+    return []
+  }
+}
+
+const hasItemQueryParam = (urlString: string): boolean => {
+  try {
+    return new URL(urlString).searchParams.has('item')
+  } catch {
+    return false
   }
 }
 
@@ -37,11 +59,24 @@ function App() {
   const [pathSegments, setPathSegments] = useState<string[]>(() =>
     isExtension ? [] : getInitialPathSegments(DEV_MODE_URL),
   )
+  const [parseMode, setParseMode] = useState<ParseMode>('path')
 
-  const updatePathSegments = (urlString: string) => {
-    const segments = getInitialPathSegments(urlString)
+  const updatePathSegments = (
+    urlString: string,
+    mode: ParseMode = parseMode,
+  ) => {
+    const segments =
+      mode === 'path'
+        ? getInitialPathSegments(urlString)
+        : getQueryItemSegments(urlString)
     setPathSegments(segments)
     setSegmentIndex(null)
+  }
+
+  const handleModeChange = (newMode: ParseMode) => {
+    setParseMode(newMode)
+    setSegmentIndex(null)
+    updatePathSegments(url, newMode)
   }
 
   useEffect(() => {
@@ -49,7 +84,9 @@ function App() {
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         const currentUrl = tabs[0]?.url || ''
         setUrl(currentUrl)
-        updatePathSegments(currentUrl)
+        // On initial mount, always use path mode
+        const segments = getInitialPathSegments(currentUrl)
+        setPathSegments(segments)
       })
 
       chrome.storage.sync.get(
@@ -65,7 +102,13 @@ function App() {
 
   const handleUrlChange = (newUrl: string) => {
     setUrl(newUrl)
-    updatePathSegments(newUrl)
+    // If in query mode but new URL lacks item param, switch to path mode
+    if (parseMode === 'query' && !hasItemQueryParam(newUrl)) {
+      setParseMode('path')
+      updatePathSegments(newUrl, 'path')
+    } else {
+      updatePathSegments(newUrl, parseMode)
+    }
   }
 
   const handleReplacementToggle = (code: string) => {
@@ -98,15 +141,34 @@ function App() {
 
     try {
       const urlObj = new URL(url)
-      const segments = urlObj.pathname.split('/').filter(Boolean)
+      let urls: string[]
 
-      const urls = selectedReplacements.map((code) => {
-        const newSegments = [...segments]
-        newSegments[segmentIndex] = code
-        const newUrl = new URL(urlObj)
-        newUrl.pathname = '/' + newSegments.join('/')
-        return newUrl.toString()
-      })
+      if (parseMode === 'path') {
+        // Path mode: replace segments in URL pathname
+        const segments = urlObj.pathname.split('/').filter(Boolean)
+        urls = selectedReplacements.map((code) => {
+          const newSegments = [...segments]
+          newSegments[segmentIndex] = code
+          const newUrl = new URL(urlObj)
+          newUrl.pathname = '/' + newSegments.join('/')
+          return newUrl.toString()
+        })
+      } else {
+        // Query mode: replace segments in 'item' query parameter
+        const itemParam = urlObj.searchParams.get('item')
+        if (!itemParam) return
+        const decodedPath = decodeURIComponent(itemParam)
+        const segments = decodedPath.split('/').filter(Boolean)
+
+        urls = selectedReplacements.map((code) => {
+          const newSegments = [...segments]
+          newSegments[segmentIndex] = code
+          const newPath = '/' + newSegments.join('/')
+          const newUrl = new URL(urlObj)
+          newUrl.searchParams.set('item', newPath)
+          return newUrl.toString()
+        })
+      }
 
       if (isExtension) {
         urls.forEach((u) => chrome.tabs.create({ url: u }))
@@ -153,6 +215,26 @@ function App() {
         {!isExtension && <span className="dev-badge">DEV MODE</span>}
       </header>
 
+      <div className="mode-toggle-section">
+        <div className="mode-toggle">
+          <button
+            className={`mode-button ${parseMode === 'path' ? 'active' : ''}`}
+            onClick={() => handleModeChange('path')}
+            title="Replace segments in URL path"
+          >
+            Path
+          </button>
+          <button
+            className={`mode-button ${parseMode === 'query' ? 'active' : ''}`}
+            onClick={() => handleModeChange('query')}
+            disabled={!hasItemQueryParam(url)}
+            title="Replace segments in 'item' query parameter"
+          >
+            Query
+          </button>
+        </div>
+      </div>
+
       <div className="section">
         <label htmlFor="url-input">
           <span className="label-icon">
@@ -192,7 +274,8 @@ function App() {
                 <rect x="9" y="3" width="6" height="4" rx="1" />
               </svg>
             </span>{' '}
-            Select the segment to replace
+            Select the {parseMode === 'path' ? 'path' : 'query item'} segment to
+            replace
           </span>
           <div className="segments">
             {pathSegments.map((segment, index) => (
@@ -292,12 +375,22 @@ function App() {
       {!isValidUrl && url && (
         <div className="error-message">Please enter a valid URL</div>
       )}
-      {isValidUrl && pathSegments.length === 0 && (
-        <div className="info-message">URL has no path segments to replace</div>
+      {isValidUrl && parseMode === 'query' && !hasItemQueryParam(url) && (
+        <div className="info-message">URL has no 'item' query parameter</div>
       )}
+      {isValidUrl &&
+        pathSegments.length === 0 &&
+        (parseMode === 'path' || hasItemQueryParam(url)) && (
+          <div className="info-message">
+            {parseMode === 'path'
+              ? 'URL has no path segments to replace'
+              : "No segments found in 'item' parameter"}
+          </div>
+        )}
       {isValidUrl && pathSegments.length > 0 && segmentIndex === null && (
         <div className="info-message">
-          Click a path segment above to select it
+          Click a {parseMode === 'path' ? 'path' : 'query item'} segment above
+          to select it
         </div>
       )}
     </div>

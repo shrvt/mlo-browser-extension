@@ -33,16 +33,19 @@ const isExtension = typeof chrome !== 'undefined' && chrome.tabs !== undefined
 
 Used to enable dev mode in regular browser (sample URL, alerts instead of tabs).
 
-### URL Parsing
+### URL Parsing (Two Modes)
 
-Path segments extracted via `new URL(url).pathname.split('/').filter(Boolean)`. User selects segment index, which gets replaced with each replacement code (language or country).
+**Path mode**: Segments extracted from URL pathname via `new URL(url).pathname.split('/').filter(Boolean)`.
+
+**Query mode**: Segments extracted from the `item` query parameter's decoded value. Used for URLs like `?item=%2Fcontent%2Fhello%2Fde%2Fwhatever` where the path is encoded in a query param.
 
 ### State
 
 - `url` - current URL string
-- `segmentIndex` - selected path segment (null if none)
+- `parseMode` - 'path' or 'query' (determines which part of URL to parse)
+- `segmentIndex` - selected segment index (null if none)
 - `selectedReplacements` - array of replacement codes (languages or country codes)
-- `pathSegments` - parsed URL path segments
+- `pathSegments` - parsed segments (from URL path or query param depending on mode)
 
 ### Storage
 
