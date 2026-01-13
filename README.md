@@ -1,14 +1,19 @@
 # Multi-Language Link Manager - Browser Extension
 
-A Chrome browser extension for opening multiple URL variants simultaneously in separate tabs. Useful for checking the same page across different language versions
+A Chrome browser extension for opening multiple URL variants simultaneously in separate tabs. Useful for checking the same page across different language or country versions.
 
 ## Features
 
 - Auto-populates with current tab's URL
-- Visual path segment selector to identify the language code
-- 10 default languages: EN, FR, ES, ZH, JA, IT, RU, NL, PL, DE
-- Quick select All/None for languages
-- Saves language preferences across sessions
+- **Two parsing modes**:
+  - **Path mode**: Replace segments in URL path (e.g., `/de/products` → `/en/products`)
+  - **Query mode**: Replace segments in encoded `item` query parameter (e.g., `?item=%2Fde%2F...` → `?item=%2Fen%2F...`)
+- Visual segment selector to identify the code to replace
+- 14 replacement codes: EN, FR, ES, ZH, JA, IT, RU, NL, PL, DE, CH, AT, BE, ROW
+  - First 10 are selected by default
+  - Last 4 (CH, AT, BE, ROW) are available but unchecked by default
+- Quick select All/None buttons
+- Saves replacement preferences across sessions (synced via Chrome storage)
 
 ## Installation
 
@@ -31,11 +36,29 @@ A Chrome browser extension for opening multiple URL variants simultaneously in s
 
 ## Usage
 
-1. Navigate to a page with a language code in the URL path (e.g., `https://example.com/de/products`)
+### Path Mode (Default)
+
+For URLs with language/country codes in the path:
+
+1. Navigate to a page like `https://example.com/de/products`
 2. Click the extension icon
-3. Click the path segment containing the language code (e.g., "de")
-4. Select/deselect languages as needed
-5. Click "Open X Tabs" to open all variants
+3. Ensure "Path" mode is selected (toggle at top-right)
+4. Click the path segment containing the code (e.g., "de")
+5. Select/deselect replacement codes as needed
+6. Click "Open X Tabs" to open all variants
+
+### Query Mode
+
+For URLs with encoded paths in the `item` query parameter:
+
+1. Navigate to a page like `https://example.com/page?item=%2Fcontent%2Fde%2Fdata`
+2. Click the extension icon
+3. Select "Query" mode (toggle at top-right)
+4. Click the segment to replace from the decoded path
+5. Select/deselect replacement codes
+6. Click "Open X Tabs" to open all variants
+
+Note: Query mode is only available when the URL contains an `item` query parameter.
 
 ## Development
 
