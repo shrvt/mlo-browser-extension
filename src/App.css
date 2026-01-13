@@ -19,7 +19,9 @@
 .popup {
   width: 380px;
   padding: 20px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+    sans-serif;
   background: var(--background);
   color: var(--foreground);
 }
@@ -98,7 +100,7 @@ h1 {
 }
 
 /* URL Input */
-.section input[type="text"] {
+.section input[type='text'] {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid var(--input);
@@ -110,21 +112,21 @@ h1 {
   box-sizing: border-box;
 }
 
-.section input[type="text"]:focus {
+.section input[type='text']:focus {
   outline: none;
   border-color: var(--ring);
   box-shadow: 0 0 0 2px rgba(24, 24, 27, 0.1);
 }
 
-.section input[type="text"].valid {
+.section input[type='text'].valid {
   border-color: var(--foreground);
 }
 
-.section input[type="text"].invalid {
+.section input[type='text'].invalid {
   border-color: var(--destructive);
 }
 
-.section input[type="text"]::placeholder {
+.section input[type='text']::placeholder {
   color: var(--muted-foreground);
 }
 
