@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import './App.css'
 
 const DEFAULT_REPLACEMENTS = [
@@ -182,14 +182,14 @@ function App() {
     }
   }
 
-  const isValidUrl = (() => {
+  const isValidUrl = useMemo(() => {
     try {
       new URL(url)
       return true
     } catch {
       return false
     }
-  })()
+  }, [url])
 
   const getInputClassName = () => {
     if (!url) return ''
@@ -375,18 +375,13 @@ function App() {
       {!isValidUrl && url && (
         <div className="error-message">Please enter a valid URL</div>
       )}
-      {isValidUrl && parseMode === 'query' && !hasItemQueryParam(url) && (
-        <div className="info-message">URL has no 'item' query parameter</div>
+      {isValidUrl && pathSegments.length === 0 && (
+        <div className="info-message">
+          {parseMode === 'path'
+            ? 'URL has no path segments to replace'
+            : "No segments found in 'item' parameter"}
+        </div>
       )}
-      {isValidUrl &&
-        pathSegments.length === 0 &&
-        (parseMode === 'path' || hasItemQueryParam(url)) && (
-          <div className="info-message">
-            {parseMode === 'path'
-              ? 'URL has no path segments to replace'
-              : "No segments found in 'item' parameter"}
-          </div>
-        )}
       {isValidUrl && pathSegments.length > 0 && segmentIndex === null && (
         <div className="info-message">
           Click a {parseMode === 'path' ? 'path' : 'query item'} segment above
