@@ -31,8 +31,9 @@ const getInitialPathSegments = (urlString: string): string[] => {
 function App() {
   const [url, setUrl] = useState(() => (isExtension ? '' : DEV_MODE_URL))
   const [segmentIndex, setSegmentIndex] = useState<number | null>(null)
-  const [selectedReplacements, setSelectedReplacements] =
-    useState<string[]>(DEFAULT_REPLACEMENTS)
+  const [selectedReplacements, setSelectedReplacements] = useState<
+    string[] | null
+  >(() => (isExtension ? null : DEFAULT_REPLACEMENTS))
   const [pathSegments, setPathSegments] = useState<string[]>(() =>
     isExtension ? [] : getInitialPathSegments(DEV_MODE_URL),
   )
@@ -54,9 +55,9 @@ function App() {
       chrome.storage.sync.get(
         ['selectedReplacements'],
         (result: { selectedReplacements?: string[] }) => {
-          if (result.selectedReplacements) {
-            setSelectedReplacements(result.selectedReplacements)
-          }
+          setSelectedReplacements(
+            result.selectedReplacements ?? DEFAULT_REPLACEMENTS,
+          )
         },
       )
     }
@@ -68,6 +69,7 @@ function App() {
   }
 
   const handleReplacementToggle = (code: string) => {
+    if (!selectedReplacements) return
     const newSelection = selectedReplacements.includes(code)
       ? selectedReplacements.filter((c) => c !== code)
       : [...selectedReplacements, code]
@@ -92,7 +94,7 @@ function App() {
   }
 
   const handleOpenAll = () => {
-    if (segmentIndex === null || !url) return
+    if (segmentIndex === null || !url || !selectedReplacements) return
 
     try {
       const urlObj = new URL(url)
@@ -236,29 +238,30 @@ function App() {
           </div>
         </div>
         <div className="replacements">
-          {ALL_REPLACEMENTS.map((code) => (
-            <label
-              key={code}
-              className={`replacement-checkbox ${selectedReplacements.includes(code) ? 'checked' : ''}`}
-            >
-              <input
-                type="checkbox"
-                checked={selectedReplacements.includes(code)}
-                onChange={() => handleReplacementToggle(code)}
-              />
-              <span className="checkmark">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              </span>
-              <span className="code-label">{code.toUpperCase()}</span>
-            </label>
-          ))}
+          {selectedReplacements &&
+            ALL_REPLACEMENTS.map((code) => (
+              <label
+                key={code}
+                className={`replacement-checkbox ${selectedReplacements.includes(code) ? 'checked' : ''}`}
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedReplacements.includes(code)}
+                  onChange={() => handleReplacementToggle(code)}
+                />
+                <span className="checkmark">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </span>
+                <span className="code-label">{code.toUpperCase()}</span>
+              </label>
+            ))}
         </div>
       </div>
 
@@ -268,6 +271,7 @@ function App() {
         disabled={
           !isValidUrl ||
           segmentIndex === null ||
+          !selectedReplacements ||
           selectedReplacements.length === 0
         }
       >
@@ -281,8 +285,8 @@ function App() {
           <polyline points="15 3 21 3 21 9" />
           <line x1="10" y1="14" x2="21" y2="3" />
         </svg>
-        Open {selectedReplacements.length} Tab
-        {selectedReplacements.length === 1 ? '' : 's'}
+        Open {selectedReplacements?.length ?? 0} Tab
+        {(selectedReplacements?.length ?? 0) === 1 ? '' : 's'}
       </button>
 
       {!isValidUrl && url && (
