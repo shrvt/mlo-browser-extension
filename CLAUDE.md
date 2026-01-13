@@ -26,22 +26,27 @@ vite.config.ts   # Vite + CRXJS plugin
 ## Key Patterns
 
 ### Chrome API Detection
+
 ```typescript
 const isExtension = typeof chrome !== 'undefined' && chrome.tabs !== undefined
 ```
+
 Used to enable dev mode in regular browser (sample URL, alerts instead of tabs).
 
 ### URL Parsing
-Path segments extracted via `new URL(url).pathname.split('/').filter(Boolean)`. User selects segment index, which gets replaced with each language code.
+
+Path segments extracted via `new URL(url).pathname.split('/').filter(Boolean)`. User selects segment index, which gets replaced with each replacement code (language or country).
 
 ### State
+
 - `url` - current URL string
 - `segmentIndex` - selected path segment (null if none)
-- `selectedLanguages` - array of language codes
+- `selectedReplacements` - array of replacement codes (languages or country codes)
 - `pathSegments` - parsed URL path segments
 
 ### Storage
-Language preferences saved to `chrome.storage.sync` on every toggle for cross-device sync.
+
+Replacement preferences saved to `chrome.storage.sync` on every toggle for cross-device sync.
 
 ## Chrome APIs Used
 

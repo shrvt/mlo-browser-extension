@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 
-const DEFAULT_LANGUAGES = [
+const DEFAULT_REPLACEMENTS = [
   'en',
   'fr',
   'es',
@@ -13,6 +13,8 @@ const DEFAULT_LANGUAGES = [
   'pl',
   'de',
 ]
+
+const ALL_REPLACEMENTS = [...DEFAULT_REPLACEMENTS, 'ch', 'at', 'be', 'row']
 const DEV_MODE_URL = 'https://example.com/de/products/category/item'
 
 const isExtension = typeof chrome !== 'undefined' && chrome.tabs !== undefined
@@ -29,8 +31,8 @@ const getInitialPathSegments = (urlString: string): string[] => {
 function App() {
   const [url, setUrl] = useState(() => (isExtension ? '' : DEV_MODE_URL))
   const [segmentIndex, setSegmentIndex] = useState<number | null>(null)
-  const [selectedLanguages, setSelectedLanguages] =
-    useState<string[]>(DEFAULT_LANGUAGES)
+  const [selectedReplacements, setSelectedReplacements] =
+    useState<string[]>(DEFAULT_REPLACEMENTS)
   const [pathSegments, setPathSegments] = useState<string[]>(() =>
     isExtension ? [] : getInitialPathSegments(DEV_MODE_URL),
   )
@@ -50,10 +52,10 @@ function App() {
       })
 
       chrome.storage.sync.get(
-        ['selectedLanguages'],
-        (result: { selectedLanguages?: string[] }) => {
-          if (result.selectedLanguages) {
-            setSelectedLanguages(result.selectedLanguages)
+        ['selectedReplacements'],
+        (result: { selectedReplacements?: string[] }) => {
+          if (result.selectedReplacements) {
+            setSelectedReplacements(result.selectedReplacements)
           }
         },
       )
@@ -65,27 +67,27 @@ function App() {
     updatePathSegments(newUrl)
   }
 
-  const handleLanguageToggle = (lang: string) => {
-    const newSelection = selectedLanguages.includes(lang)
-      ? selectedLanguages.filter((l) => l !== lang)
-      : [...selectedLanguages, lang]
-    setSelectedLanguages(newSelection)
+  const handleReplacementToggle = (code: string) => {
+    const newSelection = selectedReplacements.includes(code)
+      ? selectedReplacements.filter((c) => c !== code)
+      : [...selectedReplacements, code]
+    setSelectedReplacements(newSelection)
     if (isExtension) {
-      chrome.storage.sync.set({ selectedLanguages: newSelection })
+      chrome.storage.sync.set({ selectedReplacements: newSelection })
     }
   }
 
   const handleSelectAll = () => {
-    setSelectedLanguages(DEFAULT_LANGUAGES)
+    setSelectedReplacements(ALL_REPLACEMENTS)
     if (isExtension) {
-      chrome.storage.sync.set({ selectedLanguages: DEFAULT_LANGUAGES })
+      chrome.storage.sync.set({ selectedReplacements: ALL_REPLACEMENTS })
     }
   }
 
   const handleSelectNone = () => {
-    setSelectedLanguages([])
+    setSelectedReplacements([])
     if (isExtension) {
-      chrome.storage.sync.set({ selectedLanguages: [] })
+      chrome.storage.sync.set({ selectedReplacements: [] })
     }
   }
 
@@ -96,9 +98,9 @@ function App() {
       const urlObj = new URL(url)
       const segments = urlObj.pathname.split('/').filter(Boolean)
 
-      const urls = selectedLanguages.map((lang) => {
+      const urls = selectedReplacements.map((code) => {
         const newSegments = [...segments]
-        newSegments[segmentIndex] = lang
+        newSegments[segmentIndex] = code
         const newUrl = new URL(urlObj)
         newUrl.pathname = '/' + newSegments.join('/')
         return newUrl.toString()
@@ -188,7 +190,7 @@ function App() {
                 <rect x="9" y="3" width="6" height="4" rx="1" />
               </svg>
             </span>{' '}
-            Select the language segment
+            Select the segment to replace
           </span>
           <div className="segments">
             {pathSegments.map((segment, index) => (
@@ -196,7 +198,7 @@ function App() {
                 key={`${segment}-${index}`}
                 className={`segment ${segmentIndex === index ? 'selected' : ''}`}
                 onClick={() => setSegmentIndex(index)}
-                title={`Click to select "${segment}" as language segment`}
+                title={`Click to select "${segment}" as the segment to replace`}
               >
                 <span className="segment-index">{index + 1}</span>
                 {segment}
@@ -207,7 +209,7 @@ function App() {
       )}
 
       <div className="section">
-        <div className="languages-header">
+        <div className="replacements-header">
           <span className="section-label">
             <span className="label-icon">
               <svg
@@ -221,7 +223,7 @@ function App() {
                 <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
               </svg>
             </span>{' '}
-            Languages
+            Replacements
           </span>
           <div className="quick-select">
             <button onClick={handleSelectAll} className="link-button">
@@ -233,16 +235,16 @@ function App() {
             </button>
           </div>
         </div>
-        <div className="languages">
-          {DEFAULT_LANGUAGES.map((lang) => (
+        <div className="replacements">
+          {ALL_REPLACEMENTS.map((code) => (
             <label
-              key={lang}
-              className={`language-checkbox ${selectedLanguages.includes(lang) ? 'checked' : ''}`}
+              key={code}
+              className={`replacement-checkbox ${selectedReplacements.includes(code) ? 'checked' : ''}`}
             >
               <input
                 type="checkbox"
-                checked={selectedLanguages.includes(lang)}
-                onChange={() => handleLanguageToggle(lang)}
+                checked={selectedReplacements.includes(code)}
+                onChange={() => handleReplacementToggle(code)}
               />
               <span className="checkmark">
                 <svg
@@ -254,7 +256,7 @@ function App() {
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
               </span>
-              <span className="lang-code">{lang.toUpperCase()}</span>
+              <span className="code-label">{code.toUpperCase()}</span>
             </label>
           ))}
         </div>
@@ -264,7 +266,9 @@ function App() {
         className="open-button"
         onClick={handleOpenAll}
         disabled={
-          !isValidUrl || segmentIndex === null || selectedLanguages.length === 0
+          !isValidUrl ||
+          segmentIndex === null ||
+          selectedReplacements.length === 0
         }
       >
         <svg
@@ -277,8 +281,8 @@ function App() {
           <polyline points="15 3 21 3 21 9" />
           <line x1="10" y1="14" x2="21" y2="3" />
         </svg>
-        Open {selectedLanguages.length} Tab
-        {selectedLanguages.length === 1 ? '' : 's'}
+        Open {selectedReplacements.length} Tab
+        {selectedReplacements.length === 1 ? '' : 's'}
       </button>
 
       {!isValidUrl && url && (

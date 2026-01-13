@@ -180,16 +180,16 @@ h1 {
   color: var(--primary-foreground);
 }
 
-/* Languages */
-.languages-header {
+/* Replacements */
+.replacements-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 8px;
 }
 
-.languages-header > label,
-.languages-header > .section-label {
+.replacements-header > label,
+.replacements-header > .section-label {
   margin-bottom: 0;
 }
 
@@ -219,13 +219,13 @@ h1 {
   font-size: 12px;
 }
 
-.languages {
+.replacements {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 8px;
 }
 
-.language-checkbox {
+.replacement-checkbox {
   position: relative;
   display: flex;
   align-items: center;
@@ -239,16 +239,16 @@ h1 {
   transition: all 0.15s;
 }
 
-.language-checkbox:hover {
+.replacement-checkbox:hover {
   background: var(--muted);
 }
 
-.language-checkbox.checked {
+.replacement-checkbox.checked {
   border-color: var(--foreground);
   background: var(--muted);
 }
 
-.language-checkbox input {
+.replacement-checkbox input {
   position: absolute;
   opacity: 0;
   width: 0;
@@ -276,24 +276,24 @@ h1 {
   transition: all 0.15s;
 }
 
-.language-checkbox.checked .checkmark {
+.replacement-checkbox.checked .checkmark {
   background: var(--foreground);
   border-color: var(--foreground);
 }
 
-.language-checkbox.checked .checkmark svg {
+.replacement-checkbox.checked .checkmark svg {
   opacity: 1;
   transform: scale(1);
   color: var(--background);
 }
 
-.lang-code {
+.code-label {
   font-size: 12px;
   font-weight: 500;
   color: var(--muted-foreground);
 }
 
-.language-checkbox.checked .lang-code {
+.replacement-checkbox.checked .code-label {
   color: var(--foreground);
 }
 
