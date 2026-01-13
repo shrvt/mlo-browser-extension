@@ -50,6 +50,13 @@ const hasItemQueryParam = (urlString: string): boolean => {
   }
 }
 
+/**
+ * Renders the popup UI for selecting a path or query 'item' segment and opening versions of the current URL with that segment replaced by selected replacement codes.
+ *
+ * Supports two parse modes ("path" and "query"), allows selecting which segment to replace and which replacement codes to use, and provides quick-select controls. When running as a Chrome extension it persists replacement selections to chrome.storage.sync and opens each generated URL in a new tab; in dev mode it logs and displays the URLs that would be opened.
+ *
+ * @returns The React element for the popup interface.
+ */
 function App() {
   const [url, setUrl] = useState(() => (isExtension ? '' : DEV_MODE_URL))
   const [segmentIndex, setSegmentIndex] = useState<number | null>(null)
